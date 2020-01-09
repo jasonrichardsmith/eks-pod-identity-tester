@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+  labels:
+    name: test-pod
+  name: test-pod
+spec:
+  containers:
+  - command:
+    - /usr/run/script/run-script
+    image: python:3.7.6-buster
+    name: test-iam    
+    volumeMounts:
+    - name: script
+      mountPath: /usr/run/script
+      readOnly: true
+    - name: home
+      mountPath: /home/tester
+  restartPolicy: Never
+  volumes:
+  - name: script
+    configMap:
+      name: script
+      defaultMode: 0777
+      items:
+      - key: script
+        path: run-script
+  - name: home
+    emptyDir: {}

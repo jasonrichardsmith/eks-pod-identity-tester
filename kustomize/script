@@ -1,0 +1,64 @@
+#!/bin/bash
+RED='\033[0;31m'
+YELLOW='\033[0;33m'
+GREEN='\033[0;32m'
+NC='\033[0m'
+HOME=/home/tester
+echo -e "${GREEN}Checking env vars.${NC}"
+env | grep AWS
+
+if [[ -z "$AWS_DEFAULT_REGION" ]]; then
+	echo -e "${YELLOW}Region not set... this may or may not cause problems.\n${NC}"
+fi
+if [[ -z "$AWS_WEB_IDENTITY_TOKEN_FILE" ]]; then
+	echo -e "${RED}Token file location env var not set!\n${NC}"
+	exit
+fi
+if [[ -z "$AWS_ROLE_ARN" ]]; then
+	echo -e "${RED}Role ARN not set!\n${NC}"
+	exit
+fi
+
+echo -e "${GREEN}Environment variables set.${NC}"
+
+
+echo -e "${GREEN}Checking if token file exists and is readable.${NC}"
+
+if [[ ! -a "$AWS_WEB_IDENTITY_TOKEN_FILE" ]]
+then
+	echo -e "${RED}Token file at ${AWS_WEB_IDENTITY_TOKEN_FILE} does not exist!\n${NC}"
+	exit
+fi
+echo -e "${GREEN}Token file exists.${NC}"
+
+
+if [[ ! -r $AWS_WEB_IDENTITY_TOKEN_FILE ]]; then
+	echo -e "${RED}Token file at ${AWS_WEB_IDENTITY_TOKEN_FILE} is not readable!\n${NC}"
+	exit
+fi
+echo -e "${GREEN}Token file is readable.${NC}"
+
+echo -e "${GREEN}Installing aws cli.  This could take a while. ${NC}"
+{
+	pip3 install --user --upgrade awscli &> $HOME/installlog
+	export PATH=~/.local/bin:$PATH
+} || {
+	echo -e "${RED}aws cli install failed! logs:\n${NC}"
+	cat $HOME/installlog
+	exit
+}
+echo -e "${GREEN}Install complete.${NC}"
+
+
+AWS_TEST_COMMAND="${AWS_TEST_COMMAND:-aws sts assume-role --role-arn ${AWS_ROLE_ARN} --role-session-name test-session}"
+
+{
+	echo -e "${GREEN}Running AWS_TEST_COMMAND:\n${NC}"
+	echo $AWS_TEST_COMMAND
+	eval $AWS_TEST_COMMAND
+} || {
+	echo -e "${RED}AWS_TEST_COMMAND failed, please review your IAM settings.${NC}"
+	exit
+}
+echo -e "${GREEN}AWS_TEST_COMMAND worked.${NC}"
+exit
