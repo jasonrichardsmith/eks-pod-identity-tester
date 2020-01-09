@@ -2,8 +2,9 @@
 
 This pod can be run to try and diagnose permission issues with your pod.
 
-Sometimes SDK output makes it hard to determine if what is causing your issues with ServiceAccount 
-IAM permissions.  This pod will provide some output to try and determin why you may be experiencing.
+Sometimes SDK output makes it hard to determine what is causing your issues with ServiceAccount 
+IAM permissions.  This pod will provide some output to try and determine why you may be experiencing
+issues.
 
 This will not provide a definitive answer to permission issues but it should give you some insight.
 
@@ -12,7 +13,6 @@ kubectl 1.14 or above
 
 ## Running
 
-### Run as kustomize remotely
 Create a new folder.
 
 In the folder put a kustomization.yaml file with the following contents, updating the namespace:
